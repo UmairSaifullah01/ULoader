@@ -312,7 +312,8 @@ namespace THEBADDEST.Assets
 
 		public static async Task Preload<T>(string path) where T : Object
 		{
-			//await Addressables.LoadAssetAsync<T>(path);
+			var handle = Addressables.LoadAssetAsync<T>(path);
+			await handle.Task;
 		}
 
 	}
