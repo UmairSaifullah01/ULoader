@@ -1,3 +1,5 @@
+namespace THEBADDEST.Assets
+{
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
@@ -6,24 +8,27 @@ using System;
 
 public class ULoadConfigEditorWindow : EditorWindow
 {
-    private ULoadConfig config;
-    private const string ConfigAssetPath = "Assets/ULoad/Editor/ULoadConfig.asset";
-    private const string ConfigHashKey = "ULoad_LastConfigHash";
-    private const string LastBuildTimeKey = "ULoad_LastBuildTime";
+    private ULoaderConfig config;
+    private const string ConfigAssetPath = "Assets/ULoader/Editor/ULoadConfig.asset";
+    private const string ConfigHashKey = "ULoader_LastConfigHash";
+    private const string LastBuildTimeKey = "ULoader_LastBuildTime";
     private static string lastError = "";
 
-    [MenuItem("ULoad/Config Editor")]
+    [MenuItem("ULoader/Config Editor")]
     public static void ShowWindow()
     {
-        GetWindow<ULoadConfigEditorWindow>("ULoad Config");
+        GetWindow<ULoadConfigEditorWindow>("ULoader Config");
     }
 
     private void OnEnable()
     {
-        config = AssetDatabase.LoadAssetAtPath<ULoadConfig>(ConfigAssetPath);
+        config = AssetDatabase.LoadAssetAtPath<ULoaderConfig>(ConfigAssetPath);
         if (config == null)
         {
-            config = CreateInstance<ULoadConfig>();
+            config = CreateInstance<ULoaderConfig>();
+            string dir = System.IO.Path.GetDirectoryName(ConfigAssetPath);
+            if (!System.IO.Directory.Exists(dir))
+                System.IO.Directory.CreateDirectory(dir);
             AssetDatabase.CreateAsset(config, ConfigAssetPath);
             AssetDatabase.SaveAssets();
         }
@@ -96,11 +101,11 @@ public class ULoadConfigEditorWindow : EditorWindow
         {
             try
             {
-                if (!ULoadBuilder_EditorWindowBridge.AssignAddresses())
+                if (!ULoaderBuilder_EditorWindowBridge.AssignAddresses())
                 {
                     lastError = "Address assignment failed.";
                 }
-                else if (!ULoadBuilder_EditorWindowBridge.BuildAddressablesContent())
+                else if (!ULoaderBuilder_EditorWindowBridge.BuildAddressablesContent())
                 {
                     lastError = "Addressables build failed.";
                 }
@@ -108,8 +113,8 @@ public class ULoadConfigEditorWindow : EditorWindow
                 {
                     lastError = "";
                     EditorPrefs.SetString(LastBuildTimeKey, DateTime.Now.ToString());
-                    EditorPrefs.SetString(ConfigHashKey, ULoadBuilder_EditorWindowBridge.GetConfigHash(config));
-                    Debug.Log("ULoad: Manual build completed successfully.");
+                    EditorPrefs.SetString(ConfigHashKey, ULoaderBuilder_EditorWindowBridge.GetConfigHash(config));
+                    Debug.Log("ULoader: Manual build completed successfully.");
                 }
             }
             catch (Exception ex)
@@ -120,23 +125,24 @@ public class ULoadConfigEditorWindow : EditorWindow
     }
 }
 
-// Bridge for EditorWindow to call static methods in ULoadBuilder
-public static class ULoadBuilder_EditorWindowBridge
+// Bridge for EditorWindow to call static methods in ULoaderBuilder
+public static class ULoaderBuilder_EditorWindowBridge
 {
     public static bool AssignAddresses()
     {
-        var method = typeof(ULoadBuilder).GetMethod("AssignAddresses", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+        var method = typeof(ULoaderBuilder).GetMethod("AssignAddresses", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
         return (bool)method.Invoke(null, null);
     }
     public static bool BuildAddressablesContent()
     {
-        var method = typeof(ULoadBuilder).GetMethod("BuildAddressablesContent", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+        var method = typeof(ULoaderBuilder).GetMethod("BuildAddressablesContent", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
         return (bool)method.Invoke(null, null);
     }
-    public static string GetConfigHash(ULoadConfig config)
+    public static string GetConfigHash(ULoaderConfig config)
     {
-        var method = typeof(ULoadBuilder).GetMethod("GetConfigHash", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+        var method = typeof(ULoaderBuilder).GetMethod("GetConfigHash", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
         return (string)method.Invoke(null, new object[] { config });
     }
 }
 #endif
+}

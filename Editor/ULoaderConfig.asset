@@ -10,8 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4def79682e1b7457dad951c3fef4b5e9, type: 3}
-  m_Name: ULoadConfig
+  m_Name: ULoaderConfig
   m_EditorClassIdentifier: 
   ResourceFolders:
   - Assets/MyResources
-  GroupingRules: []
+  GroupingRules:
+  - Folder: Assets/MyResources
+    GroupName: MyResources
+    GroupingType: 1
+    CustomLabel: rr
