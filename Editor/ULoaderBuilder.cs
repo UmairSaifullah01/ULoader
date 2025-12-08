@@ -19,8 +19,22 @@ namespace THEBADDEST.Assets
     {
 
         public int callbackOrder => 0;
-        private const string ConfigAssetPath = "Assets/ULoader/Editor/ULoadConfig.asset";
         private const string ConfigHashKey = "ULoader_LastConfigHash";
+        
+        private static string GetConfigAssetPath()
+        {
+            // Find the script file to determine the package location
+            string[] guids = AssetDatabase.FindAssets("t:Script ULoaderBuilder");
+            if (guids.Length > 0)
+            {
+                string scriptPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+                string packageDir = Path.GetDirectoryName(Path.GetDirectoryName(scriptPath)); // Go up two levels from Editor folder
+                return Path.Combine(packageDir, "Editor/Content/ULoaderConfig.asset").Replace("\\", "/");
+            }
+            
+            // Fallback to the new default path if script not found
+            return "Assets/ULoader/Editor/Content/ULoaderConfig.asset";
+        }
 
         public void OnPreprocessBuild(BuildReport report)
         {
@@ -56,7 +70,8 @@ namespace THEBADDEST.Assets
 
         private static bool ShouldRebuild()
         {
-            var config = AssetDatabase.LoadAssetAtPath<ULoaderConfig>(ConfigAssetPath);
+            string configAssetPath = GetConfigAssetPath();
+            var config = AssetDatabase.LoadAssetAtPath<ULoaderConfig>(configAssetPath);
             if (config == null) return true;
             string currentHash = GetConfigHash(config);
             string lastHash = EditorPrefs.GetString(ConfigHashKey, "");
@@ -65,7 +80,8 @@ namespace THEBADDEST.Assets
 
         private static void SaveCurrentConfigHash()
         {
-            var config = AssetDatabase.LoadAssetAtPath<ULoaderConfig>(ConfigAssetPath);
+            string configAssetPath = GetConfigAssetPath();
+            var config = AssetDatabase.LoadAssetAtPath<ULoaderConfig>(configAssetPath);
             if (config == null) return;
             string currentHash = GetConfigHash(config);
             EditorPrefs.SetString(ConfigHashKey, currentHash);
@@ -92,10 +108,11 @@ namespace THEBADDEST.Assets
         {
             try
             {
-                var config = AssetDatabase.LoadAssetAtPath<ULoaderConfig>(ConfigAssetPath);
+                string configAssetPath = GetConfigAssetPath();
+                var config = AssetDatabase.LoadAssetAtPath<ULoaderConfig>(configAssetPath);
                 if (config == null || config.ResourceFolders == null || config.ResourceFolders.Count == 0)
                 {
-                    Debug.LogWarning($"ULoader: No resource folders configured in {ConfigAssetPath}");
+                    Debug.LogWarning($"ULoader: No resource folders configured in {configAssetPath}");
                     return false;
                 }
 
